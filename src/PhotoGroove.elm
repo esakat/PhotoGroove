@@ -1,4 +1,4 @@
-port module PhotoGroove exposing (Model, Msg(..), Photo, initialModel, main, photoDecoder, update, urlPrefix, view, Status(..))
+port module PhotoGroove exposing (Model, Msg(..), Photo, Status(..), initialModel, main, photoDecoder, update, urlPrefix, view)
 
 import Array exposing (Array)
 import Browser
@@ -8,8 +8,8 @@ import Html.Events exposing (on, onClick)
 import Http
 import Json.Decode exposing (Decoder, at, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
-import Random
 import Json.Encode as Encode
+import Random
 
 
 urlPrefix : String
@@ -42,6 +42,7 @@ view model =
             Errored errorMessage ->
                 [ text ("Error: " ++ errorMessage) ]
 
+
 viewFilter : (Int -> Msg) -> String -> Int -> Html Msg
 viewFilter toMsg name magnitude =
     div [ class "filter-slider" ]
@@ -53,6 +54,7 @@ viewFilter toMsg name magnitude =
             []
         , label [] [ text (String.fromInt magnitude) ]
         ]
+
 
 viewLoaded : List Photo -> String -> Model -> List (Html Msg)
 viewLoaded photos selectedUrl model =
@@ -138,10 +140,12 @@ type Status
     | Loaded (List Photo) String
     | Errored String
 
+
 type alias FilterOptions =
     { url : String
     , filters : List { name : String, amount : Float }
     }
+
 
 type alias Model =
     { status : Status
@@ -162,7 +166,6 @@ initialModel =
     , ripple = 5
     , noise = 5
     }
-
 
 
 selectUrl : String -> Status -> Status
@@ -233,6 +236,7 @@ update msg model =
         SlidNoise noise ->
             applyFilters { model | noise = noise }
 
+
 applyFilters : Model -> ( Model, Cmd Msg )
 applyFilters model =
     case model.status of
@@ -241,14 +245,17 @@ applyFilters model =
                 filters =
                     [ { name = "Hue", amount = toFloat model.hue / 11 }
                     , { name = "Ripple", amount = toFloat model.ripple / 11 }
-                    , { name = "Noise", amount = toFloat model.noise / 11}
+                    , { name = "Noise", amount = toFloat model.noise / 11 }
                     ]
+
                 url =
                     urlPrefix ++ "large/" ++ selectedUrl
             in
             ( model, setFilters { url = url, filters = filters } )
+
         Loading ->
             ( model, Cmd.none )
+
         Errored errorMessage ->
             ( model, Cmd.none )
 
@@ -260,9 +267,11 @@ initialCmd =
         , expect = Http.expectJson GotPhotos (list photoDecoder)
         }
 
+
 rangeSlider : List (Attribute msg) -> List (Html msg) -> Html msg
 rangeSlider attributes children =
     node "range-slider" attributes children
+
 
 main : Program Float Model Msg
 main =
@@ -273,13 +282,15 @@ main =
         , subscriptions = subscriptions
         }
 
-init : Float -> (Model, Cmd Msg)
+
+init : Float -> ( Model, Cmd Msg )
 init flags =
     let
         activity =
             "Initializing Pasta v" ++ String.fromFloat flags
     in
-    ( {initialModel | activity = activity }, initialCmd)
+    ( { initialModel | activity = activity }, initialCmd )
+
 
 onSlide : (Int -> msg) -> Attribute msg
 onSlide toMsg =
@@ -287,7 +298,10 @@ onSlide toMsg =
         |> Json.Decode.map toMsg
         |> on "slide"
 
+
 port setFilters : FilterOptions -> Cmd msg
+
+
 port activityChanges : (String -> msg) -> Sub msg
 
 
