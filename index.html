@@ -37,10 +37,15 @@
 <div id="app"></div>
 
 <script src="http://elm-in-action.com/pasta.js"></script>
-<script src="elm.js"></script>
+<script src="/elm.js"></script>
 <script>
-    //var app = Elm.PhotoGroove.init({node: document.getElementById("app"), flags: Pasta.version});
-    var app = Elm.PhotoFolders.init({node: document.getElementById("app")});
+    // var app = Elm.PhotoGallery.init({node: document.getElementById("app"), flags: Pasta.version});
+    // var app = Elm.PhotoFolders.init({node: document.getElementById("app")});
+    // var app = Elm.Main.init({node: document.getElementById("app")});
+    var app = Elm.Main.init({
+        flags: Pasta.version,
+        node: document.getElementById("app")
+    });
 
     app.ports.setFilters.subscribe(function(options) {
         requestAnimationFrame(function() {

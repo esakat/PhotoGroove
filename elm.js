@@ -2488,6 +2488,106 @@ function _Http_track(router, xhr, tracker)
 	});
 }
 
+function _Url_percentEncode(string)
+{
+	return encodeURIComponent(string);
+}
+
+function _Url_percentDecode(string)
+{
+	try
+	{
+		return elm$core$Maybe$Just(decodeURIComponent(string));
+	}
+	catch (e)
+	{
+		return elm$core$Maybe$Nothing;
+	}
+}
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
+
+
+
+function _Time_now(millisToPosix)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(millisToPosix(Date.now())));
+	});
+}
+
+var _Time_setInterval = F2(function(interval, task)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var id = setInterval(function() { _Scheduler_rawSpawn(task); }, interval);
+		return function() { clearInterval(id); };
+	});
+});
+
+function _Time_here()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(
+			A2(elm$time$Time$customZone, -(new Date().getTimezoneOffset()), _List_Nil)
+		));
+	});
+}
+
+
+function _Time_getZoneName()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		try
+		{
+			var name = elm$time$Time$Name(Intl.DateTimeFormat().resolvedOptions().timeZone);
+		}
+		catch (e)
+		{
+			var name = elm$time$Time$Offset(new Date().getTimezoneOffset());
+		}
+		callback(_Scheduler_succeed(name));
+	});
+}
+
+
 
 
 // HELPERS
@@ -4485,19 +4585,18 @@ function _Browser_load(url)
 		}
 	}));
 }
-var author$project$PhotoFolders$LoadPage = function (a) {
-	return {$: 'LoadPage', a: a};
+var author$project$Main$ChangedUrl = function (a) {
+	return {$: 'ChangedUrl', a: a};
 };
-var author$project$PhotoFolders$Folder = function (a) {
-	return {$: 'Folder', a: a};
+var author$project$Main$ClickedLink = function (a) {
+	return {$: 'ClickedLink', a: a};
 };
-var elm$core$Basics$True = {$: 'True'};
-var elm$core$Basics$identity = function (x) {
-	return x;
+var author$project$Main$NotFound = {$: 'NotFound'};
+var author$project$Main$Folders = {$: 'Folders'};
+var author$project$Main$Gallery = {$: 'Gallery'};
+var author$project$Main$SelectedPhoto = function (a) {
+	return {$: 'SelectedPhoto', a: a};
 };
-var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
-var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$LT = {$: 'LT'};
 var elm$core$Elm$JsArray$foldr = _JsArray_foldr;
@@ -4578,16 +4677,285 @@ var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
 };
-var author$project$PhotoFolders$initialModel = {
-	photos: elm$core$Dict$empty,
-	root: author$project$PhotoFolders$Folder(
-		{expanded: true, name: 'Loading...', photoUrls: _List_Nil, subfolders: _List_Nil}),
-	selectedPhotoUrl: elm$core$Maybe$Nothing
-};
-var elm$core$Basics$apR = F2(
-	function (x, f) {
+var elm$core$Basics$apL = F2(
+	function (f, x) {
 		return f(x);
 	});
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$core$Basics$add = _Basics_add;
+var elm$core$Basics$gt = _Utils_gt;
+var elm$core$List$foldl = F3(
+	function (func, acc, list) {
+		foldl:
+		while (true) {
+			if (!list.b) {
+				return acc;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				var $temp$func = func,
+					$temp$acc = A2(func, x, acc),
+					$temp$list = xs;
+				func = $temp$func;
+				acc = $temp$acc;
+				list = $temp$list;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$List$reverse = function (list) {
+	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
+};
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var elm$url$Url$Parser$Parser = function (a) {
+	return {$: 'Parser', a: a};
+};
+var elm$url$Url$Parser$State = F5(
+	function (visited, unvisited, params, frag, value) {
+		return {frag: frag, params: params, unvisited: unvisited, value: value, visited: visited};
+	});
+var elm$url$Url$Parser$mapState = F2(
+	function (func, _n0) {
+		var visited = _n0.visited;
+		var unvisited = _n0.unvisited;
+		var params = _n0.params;
+		var frag = _n0.frag;
+		var value = _n0.value;
+		return A5(
+			elm$url$Url$Parser$State,
+			visited,
+			unvisited,
+			params,
+			frag,
+			func(value));
+	});
+var elm$url$Url$Parser$map = F2(
+	function (subValue, _n0) {
+		var parseArg = _n0.a;
+		return elm$url$Url$Parser$Parser(
+			function (_n1) {
+				var visited = _n1.visited;
+				var unvisited = _n1.unvisited;
+				var params = _n1.params;
+				var frag = _n1.frag;
+				var value = _n1.value;
+				return A2(
+					elm$core$List$map,
+					elm$url$Url$Parser$mapState(value),
+					parseArg(
+						A5(elm$url$Url$Parser$State, visited, unvisited, params, frag, subValue)));
+			});
+	});
+var elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
+		}
+	});
+var elm$core$List$concat = function (lists) {
+	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
+};
+var elm$core$List$concatMap = F2(
+	function (f, list) {
+		return elm$core$List$concat(
+			A2(elm$core$List$map, f, list));
+	});
+var elm$url$Url$Parser$oneOf = function (parsers) {
+	return elm$url$Url$Parser$Parser(
+		function (state) {
+			return A2(
+				elm$core$List$concatMap,
+				function (_n0) {
+					var parser = _n0.a;
+					return parser(state);
+				},
+				parsers);
+		});
+};
+var elm$core$Basics$eq = _Utils_equal;
+var elm$url$Url$Parser$s = function (str) {
+	return elm$url$Url$Parser$Parser(
+		function (_n0) {
+			var visited = _n0.visited;
+			var unvisited = _n0.unvisited;
+			var params = _n0.params;
+			var frag = _n0.frag;
+			var value = _n0.value;
+			if (!unvisited.b) {
+				return _List_Nil;
+			} else {
+				var next = unvisited.a;
+				var rest = unvisited.b;
+				return _Utils_eq(next, str) ? _List_fromArray(
+					[
+						A5(
+						elm$url$Url$Parser$State,
+						A2(elm$core$List$cons, next, visited),
+						rest,
+						params,
+						frag,
+						value)
+					]) : _List_Nil;
+			}
+		});
+};
+var elm$url$Url$Parser$slash = F2(
+	function (_n0, _n1) {
+		var parseBefore = _n0.a;
+		var parseAfter = _n1.a;
+		return elm$url$Url$Parser$Parser(
+			function (state) {
+				return A2(
+					elm$core$List$concatMap,
+					parseAfter,
+					parseBefore(state));
+			});
+	});
+var elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
+var elm$url$Url$Parser$custom = F2(
+	function (tipe, stringToSomething) {
+		return elm$url$Url$Parser$Parser(
+			function (_n0) {
+				var visited = _n0.visited;
+				var unvisited = _n0.unvisited;
+				var params = _n0.params;
+				var frag = _n0.frag;
+				var value = _n0.value;
+				if (!unvisited.b) {
+					return _List_Nil;
+				} else {
+					var next = unvisited.a;
+					var rest = unvisited.b;
+					var _n2 = stringToSomething(next);
+					if (_n2.$ === 'Just') {
+						var nextValue = _n2.a;
+						return _List_fromArray(
+							[
+								A5(
+								elm$url$Url$Parser$State,
+								A2(elm$core$List$cons, next, visited),
+								rest,
+								params,
+								frag,
+								value(nextValue))
+							]);
+					} else {
+						return _List_Nil;
+					}
+				}
+			});
+	});
+var elm$url$Url$Parser$string = A2(elm$url$Url$Parser$custom, 'STRING', elm$core$Maybe$Just);
+var elm$url$Url$Parser$top = elm$url$Url$Parser$Parser(
+	function (state) {
+		return _List_fromArray(
+			[state]);
+	});
+var author$project$Main$parser = elm$url$Url$Parser$oneOf(
+	_List_fromArray(
+		[
+			A2(elm$url$Url$Parser$map, author$project$Main$Folders, elm$url$Url$Parser$top),
+			A2(
+			elm$url$Url$Parser$map,
+			author$project$Main$Gallery,
+			elm$url$Url$Parser$s('gallery')),
+			A2(
+			elm$url$Url$Parser$map,
+			author$project$Main$SelectedPhoto,
+			A2(
+				elm$url$Url$Parser$slash,
+				elm$url$Url$Parser$s('photos'),
+				elm$url$Url$Parser$string))
+		]));
+var author$project$Main$FoldersPage = function (a) {
+	return {$: 'FoldersPage', a: a};
+};
+var author$project$Main$GotFoldersMsg = function (a) {
+	return {$: 'GotFoldersMsg', a: a};
+};
+var elm$core$Basics$False = {$: 'False'};
+var elm$core$Basics$True = {$: 'True'};
+var elm$core$Result$isOk = function (result) {
+	if (result.$ === 'Ok') {
+		return true;
+	} else {
+		return false;
+	}
+};
 var elm$core$Array$branchFactor = 32;
 var elm$core$Array$Array_elm_builtin = F4(
 	function (a, b, c, d) {
@@ -4611,28 +4979,6 @@ var elm$core$Array$SubTree = function (a) {
 	return {$: 'SubTree', a: a};
 };
 var elm$core$Elm$JsArray$initializeFromList = _JsArray_initializeFromList;
-var elm$core$List$foldl = F3(
-	function (func, acc, list) {
-		foldl:
-		while (true) {
-			if (!list.b) {
-				return acc;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				var $temp$func = func,
-					$temp$acc = A2(func, x, acc),
-					$temp$list = xs;
-				func = $temp$func;
-				acc = $temp$acc;
-				list = $temp$list;
-				continue foldl;
-			}
-		}
-	});
-var elm$core$List$reverse = function (list) {
-	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
-};
 var elm$core$Array$compressNodes = F2(
 	function (nodes, acc) {
 		compressNodes:
@@ -4655,7 +5001,10 @@ var elm$core$Array$compressNodes = F2(
 			}
 		}
 	});
-var elm$core$Basics$eq = _Utils_equal;
+var elm$core$Basics$apR = F2(
+	function (x, f) {
+		return f(x);
+	});
 var elm$core$Tuple$first = function (_n0) {
 	var x = _n0.a;
 	return x;
@@ -4676,13 +5025,7 @@ var elm$core$Array$treeFromBuilder = F2(
 			}
 		}
 	});
-var elm$core$Basics$add = _Basics_add;
-var elm$core$Basics$apL = F2(
-	function (f, x) {
-		return f(x);
-	});
 var elm$core$Basics$floor = _Basics_floor;
-var elm$core$Basics$gt = _Utils_gt;
 var elm$core$Basics$max = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) > 0) ? x : y;
@@ -4713,7 +5056,6 @@ var elm$core$Array$builderToArray = F2(
 				builder.tail);
 		}
 	});
-var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$idiv = _Basics_idiv;
 var elm$core$Basics$lt = _Utils_lt;
 var elm$core$Elm$JsArray$initialize = _JsArray_initialize;
@@ -4756,21 +5098,12 @@ var elm$core$Array$initialize = F2(
 			return A5(elm$core$Array$initializeHelp, fn, initialFromIndex, len, _List_Nil, tail);
 		}
 	});
-var elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
 var elm$core$Result$Ok = function (a) {
 	return {$: 'Ok', a: a};
-};
-var elm$core$Result$isOk = function (result) {
-	if (result.$ === 'Ok') {
-		return true;
-	} else {
-		return false;
-	}
 };
 var elm$json$Json$Decode$Failure = F2(
 	function (a, b) {
@@ -4977,6 +5310,51 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 			}
 		}
 	});
+var elm$core$Platform$Cmd$map = _Platform_map;
+var author$project$Main$toFolders = F2(
+	function (model, _n0) {
+		var folders = _n0.a;
+		var cmd = _n0.b;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					page: author$project$Main$FoldersPage(folders)
+				}),
+			A2(elm$core$Platform$Cmd$map, author$project$Main$GotFoldersMsg, cmd));
+	});
+var author$project$Main$GalleryPage = function (a) {
+	return {$: 'GalleryPage', a: a};
+};
+var author$project$Main$GotGalleryMsg = function (a) {
+	return {$: 'GotGalleryMsg', a: a};
+};
+var author$project$Main$toGallery = F2(
+	function (model, _n0) {
+		var gallery = _n0.a;
+		var cmd = _n0.b;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					page: author$project$Main$GalleryPage(gallery)
+				}),
+			A2(elm$core$Platform$Cmd$map, author$project$Main$GotGalleryMsg, cmd));
+	});
+var author$project$PhotoFolders$LoadPage = function (a) {
+	return {$: 'LoadPage', a: a};
+};
+var author$project$PhotoFolders$Folder = function (a) {
+	return {$: 'Folder', a: a};
+};
+var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
+var author$project$PhotoFolders$initialModel = {
+	photos: elm$core$Dict$empty,
+	root: author$project$PhotoFolders$Folder(
+		{expanded: true, name: 'Loading...', photoUrls: _List_Nil, subfolders: _List_Nil}),
+	selectedPhotoUrl: elm$core$Maybe$Nothing
+};
 var elm$json$Json$Decode$map2 = _Json_map2;
 var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = elm$json$Json$Decode$map2(elm$core$Basics$apR);
 var elm$json$Json$Decode$field = _Json_decodeField;
@@ -5125,75 +5503,6 @@ var elm$core$Dict$fromList = function (assocs) {
 		elm$core$Dict$empty,
 		assocs);
 };
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var author$project$PhotoFolders$fromPairs = function (pairs) {
 	return elm$core$Dict$fromList(
 		A2(elm$core$List$map, author$project$PhotoFolders$finishPhoto, pairs));
@@ -6033,14 +6342,284 @@ var elm$http$Http$get = function (r) {
 	return elm$http$Http$request(
 		{body: elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: elm$core$Maybe$Nothing, tracker: elm$core$Maybe$Nothing, url: r.url});
 };
-var author$project$PhotoFolders$init = function (_n0) {
+var author$project$PhotoFolders$init = function (selectedFilename) {
 	return _Utils_Tuple2(
-		author$project$PhotoFolders$initialModel,
+		_Utils_update(
+			author$project$PhotoFolders$initialModel,
+			{selectedPhotoUrl: selectedFilename}),
 		elm$http$Http$get(
 			{
 				expect: A2(elm$http$Http$expectJson, author$project$PhotoFolders$LoadPage, author$project$PhotoFolders$modelDecoder),
 				url: 'http://elm-in-action.com/folders/list'
 			}));
+};
+var author$project$PhotoGallery$GotPhotos = function (a) {
+	return {$: 'GotPhotos', a: a};
+};
+var elm$json$Json$Decode$decodeValue = _Json_run;
+var elm$json$Json$Decode$fail = _Json_fail;
+var elm$json$Json$Decode$null = _Json_decodeNull;
+var elm$json$Json$Decode$oneOf = _Json_oneOf;
+var elm$json$Json$Decode$value = _Json_decodeValue;
+var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						decoder,
+						elm$json$Json$Decode$null(fallback)
+					]));
+		};
+		var handleResult = function (input) {
+			var _n0 = A2(elm$json$Json$Decode$decodeValue, pathDecoder, input);
+			if (_n0.$ === 'Ok') {
+				var rawValue = _n0.a;
+				var _n1 = A2(
+					elm$json$Json$Decode$decodeValue,
+					nullOr(valDecoder),
+					rawValue);
+				if (_n1.$ === 'Ok') {
+					var finalResult = _n1.a;
+					return elm$json$Json$Decode$succeed(finalResult);
+				} else {
+					var finalErr = _n1.a;
+					return elm$json$Json$Decode$fail(
+						elm$json$Json$Decode$errorToString(finalErr));
+				}
+			} else {
+				return elm$json$Json$Decode$succeed(fallback);
+			}
+		};
+		return A2(elm$json$Json$Decode$andThen, handleResult, elm$json$Json$Decode$value);
+	});
+var NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
+	function (key, valDecoder, fallback, decoder) {
+		return A2(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2(elm$json$Json$Decode$field, key, elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var author$project$PhotoGallery$Photo = F3(
+	function (url, size, title) {
+		return {size: size, title: title, url: url};
+	});
+var author$project$PhotoGallery$photoDecoder = A4(
+	NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'title',
+	elm$json$Json$Decode$string,
+	'untitled',
+	A3(
+		NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'size',
+		elm$json$Json$Decode$int,
+		A3(
+			NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'url',
+			elm$json$Json$Decode$string,
+			elm$json$Json$Decode$succeed(author$project$PhotoGallery$Photo))));
+var author$project$PhotoGallery$initialCmd = elm$http$Http$get(
+	{
+		expect: A2(
+			elm$http$Http$expectJson,
+			author$project$PhotoGallery$GotPhotos,
+			elm$json$Json$Decode$list(author$project$PhotoGallery$photoDecoder)),
+		url: 'http://elm-in-action.com/photos/list.json'
+	});
+var author$project$PhotoGallery$Loading = {$: 'Loading'};
+var author$project$PhotoGallery$Medium = {$: 'Medium'};
+var author$project$PhotoGallery$initialModel = {activity: '', chosenSize: author$project$PhotoGallery$Medium, hue: 0, noise: 0, ripple: 0, status: author$project$PhotoGallery$Loading};
+var elm$core$String$fromFloat = _String_fromNumber;
+var author$project$PhotoGallery$init = function (flags) {
+	var activity = 'Initializing Pasta v' + elm$core$String$fromFloat(flags);
+	return _Utils_Tuple2(
+		_Utils_update(
+			author$project$PhotoGallery$initialModel,
+			{activity: activity}),
+		author$project$PhotoGallery$initialCmd);
+};
+var elm$core$Platform$Cmd$batch = _Platform_batch;
+var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var elm$url$Url$Parser$getFirstMatch = function (states) {
+	getFirstMatch:
+	while (true) {
+		if (!states.b) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var state = states.a;
+			var rest = states.b;
+			var _n1 = state.unvisited;
+			if (!_n1.b) {
+				return elm$core$Maybe$Just(state.value);
+			} else {
+				if ((_n1.a === '') && (!_n1.b.b)) {
+					return elm$core$Maybe$Just(state.value);
+				} else {
+					var $temp$states = rest;
+					states = $temp$states;
+					continue getFirstMatch;
+				}
+			}
+		}
+	}
+};
+var elm$url$Url$Parser$removeFinalEmpty = function (segments) {
+	if (!segments.b) {
+		return _List_Nil;
+	} else {
+		if ((segments.a === '') && (!segments.b.b)) {
+			return _List_Nil;
+		} else {
+			var segment = segments.a;
+			var rest = segments.b;
+			return A2(
+				elm$core$List$cons,
+				segment,
+				elm$url$Url$Parser$removeFinalEmpty(rest));
+		}
+	}
+};
+var elm$url$Url$Parser$preparePath = function (path) {
+	var _n0 = A2(elm$core$String$split, '/', path);
+	if (_n0.b && (_n0.a === '')) {
+		var segments = _n0.b;
+		return elm$url$Url$Parser$removeFinalEmpty(segments);
+	} else {
+		var segments = _n0;
+		return elm$url$Url$Parser$removeFinalEmpty(segments);
+	}
+};
+var elm$url$Url$percentDecode = _Url_percentDecode;
+var elm$url$Url$Parser$addToParametersHelp = F2(
+	function (value, maybeList) {
+		if (maybeList.$ === 'Nothing') {
+			return elm$core$Maybe$Just(
+				_List_fromArray(
+					[value]));
+		} else {
+			var list = maybeList.a;
+			return elm$core$Maybe$Just(
+				A2(elm$core$List$cons, value, list));
+		}
+	});
+var elm$url$Url$Parser$addParam = F2(
+	function (segment, dict) {
+		var _n0 = A2(elm$core$String$split, '=', segment);
+		if ((_n0.b && _n0.b.b) && (!_n0.b.b.b)) {
+			var rawKey = _n0.a;
+			var _n1 = _n0.b;
+			var rawValue = _n1.a;
+			var _n2 = elm$url$Url$percentDecode(rawKey);
+			if (_n2.$ === 'Nothing') {
+				return dict;
+			} else {
+				var key = _n2.a;
+				var _n3 = elm$url$Url$percentDecode(rawValue);
+				if (_n3.$ === 'Nothing') {
+					return dict;
+				} else {
+					var value = _n3.a;
+					return A3(
+						elm$core$Dict$update,
+						key,
+						elm$url$Url$Parser$addToParametersHelp(value),
+						dict);
+				}
+			}
+		} else {
+			return dict;
+		}
+	});
+var elm$url$Url$Parser$prepareQuery = function (maybeQuery) {
+	if (maybeQuery.$ === 'Nothing') {
+		return elm$core$Dict$empty;
+	} else {
+		var qry = maybeQuery.a;
+		return A3(
+			elm$core$List$foldr,
+			elm$url$Url$Parser$addParam,
+			elm$core$Dict$empty,
+			A2(elm$core$String$split, '&', qry));
+	}
+};
+var elm$url$Url$Parser$parse = F2(
+	function (_n0, url) {
+		var parser = _n0.a;
+		return elm$url$Url$Parser$getFirstMatch(
+			parser(
+				A5(
+					elm$url$Url$Parser$State,
+					_List_Nil,
+					elm$url$Url$Parser$preparePath(url.path),
+					elm$url$Url$Parser$prepareQuery(url.query),
+					url.fragment,
+					elm$core$Basics$identity)));
+	});
+var author$project$Main$updateUrl = F2(
+	function (url, model) {
+		var _n0 = A2(elm$url$Url$Parser$parse, author$project$Main$parser, url);
+		if (_n0.$ === 'Just') {
+			switch (_n0.a.$) {
+				case 'Gallery':
+					var _n1 = _n0.a;
+					return A2(
+						author$project$Main$toGallery,
+						model,
+						author$project$PhotoGallery$init(model.version));
+				case 'Folders':
+					var _n2 = _n0.a;
+					return A2(
+						author$project$Main$toFolders,
+						model,
+						author$project$PhotoFolders$init(elm$core$Maybe$Nothing));
+				default:
+					var filename = _n0.a.a;
+					return A2(
+						author$project$Main$toFolders,
+						model,
+						author$project$PhotoFolders$init(
+							elm$core$Maybe$Just(filename)));
+			}
+		} else {
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{page: author$project$Main$NotFound}),
+				elm$core$Platform$Cmd$none);
+		}
+	});
+var author$project$Main$init = F3(
+	function (version, url, key) {
+		return A2(
+			author$project$Main$updateUrl,
+			url,
+			{key: key, page: author$project$Main$NotFound, version: version});
+	});
+var author$project$PhotoGallery$GotActivity = function (a) {
+	return {$: 'GotActivity', a: a};
+};
+var author$project$PhotoGallery$activityChanges = _Platform_incomingPort('activityChanges', elm$json$Json$Decode$string);
+var author$project$PhotoGallery$subscriptions = function (model) {
+	return author$project$PhotoGallery$activityChanges(author$project$PhotoGallery$GotActivity);
+};
+var elm$core$Platform$Sub$map = _Platform_map;
+var elm$core$Platform$Sub$batch = _Platform_batch;
+var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
+var author$project$Main$subscriptions = function (model) {
+	var _n0 = model.page;
+	if (_n0.$ === 'GalleryPage') {
+		var gallery = _n0.a;
+		return A2(
+			elm$core$Platform$Sub$map,
+			author$project$Main$GotGalleryMsg,
+			author$project$PhotoGallery$subscriptions(gallery));
+	} else {
+		return elm$core$Platform$Sub$none;
+	}
 };
 var elm$core$Basics$not = _Basics_not;
 var author$project$PhotoFolders$toggleExpanded = F2(
@@ -6065,8 +6644,6 @@ var author$project$PhotoFolders$toggleExpanded = F2(
 					{subfolders: subfolders}));
 		}
 	});
-var elm$core$Platform$Cmd$batch = _Platform_batch;
-var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$PhotoFolders$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -6091,12 +6668,856 @@ var author$project$PhotoFolders$update = F2(
 			default:
 				if (msg.a.$ === 'Ok') {
 					var newModel = msg.a.a;
-					return _Utils_Tuple2(newModel, elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2(
+						_Utils_update(
+							newModel,
+							{selectedPhotoUrl: model.selectedPhotoUrl}),
+						elm$core$Platform$Cmd$none);
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 		}
 	});
+var author$project$PhotoGallery$GotRandomPhoto = function (a) {
+	return {$: 'GotRandomPhoto', a: a};
+};
+var author$project$PhotoGallery$Loaded = F2(
+	function (a, b) {
+		return {$: 'Loaded', a: a, b: b};
+	});
+var elm$json$Json$Encode$float = _Json_wrap;
+var elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$PhotoGallery$setFilters = _Platform_outgoingPort(
+	'setFilters',
+	function ($) {
+		return elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'filters',
+					elm$json$Json$Encode$list(
+						function ($) {
+							return elm$json$Json$Encode$object(
+								_List_fromArray(
+									[
+										_Utils_Tuple2(
+										'amount',
+										elm$json$Json$Encode$float($.amount)),
+										_Utils_Tuple2(
+										'name',
+										elm$json$Json$Encode$string($.name))
+									]));
+						})($.filters)),
+					_Utils_Tuple2(
+					'url',
+					elm$json$Json$Encode$string($.url))
+				]));
+	});
+var author$project$PhotoGallery$urlPrefix = 'http://elm-in-action.com/';
+var author$project$PhotoGallery$applyFilters = function (model) {
+	var _n0 = model.status;
+	switch (_n0.$) {
+		case 'Loaded':
+			var photos = _n0.a;
+			var selectedUrl = _n0.b;
+			var url = author$project$PhotoGallery$urlPrefix + ('large/' + selectedUrl);
+			var filters = _List_fromArray(
+				[
+					{amount: model.hue / 11, name: 'Hue'},
+					{amount: model.ripple / 11, name: 'Ripple'},
+					{amount: model.noise / 11, name: 'Noise'}
+				]);
+			return _Utils_Tuple2(
+				model,
+				author$project$PhotoGallery$setFilters(
+					{filters: filters, url: url}));
+		case 'Loading':
+			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+		default:
+			var errorMessage = _n0.a;
+			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+	}
+};
+var author$project$PhotoGallery$selectUrl = F2(
+	function (url, status) {
+		switch (status.$) {
+			case 'Loaded':
+				var photos = status.a;
+				return A2(author$project$PhotoGallery$Loaded, photos, url);
+			case 'Loading':
+				return status;
+			default:
+				var errorMessage = status.a;
+				return status;
+		}
+	});
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var elm$random$Random$Generate = function (a) {
+	return {$: 'Generate', a: a};
+};
+var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var elm$random$Random$Seed = F2(
+	function (a, b) {
+		return {$: 'Seed', a: a, b: b};
+	});
+var elm$random$Random$next = function (_n0) {
+	var state0 = _n0.a;
+	var incr = _n0.b;
+	return A2(elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
+};
+var elm$random$Random$initialSeed = function (x) {
+	var _n0 = elm$random$Random$next(
+		A2(elm$random$Random$Seed, 0, 1013904223));
+	var state1 = _n0.a;
+	var incr = _n0.b;
+	var state2 = (state1 + x) >>> 0;
+	return elm$random$Random$next(
+		A2(elm$random$Random$Seed, state2, incr));
+};
+var elm$time$Time$Name = function (a) {
+	return {$: 'Name', a: a};
+};
+var elm$time$Time$Offset = function (a) {
+	return {$: 'Offset', a: a};
+};
+var elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 'Zone', a: a, b: b};
+	});
+var elm$time$Time$customZone = elm$time$Time$Zone;
+var elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var elm$time$Time$millisToPosix = elm$time$Time$Posix;
+var elm$time$Time$now = _Time_now(elm$time$Time$millisToPosix);
+var elm$time$Time$posixToMillis = function (_n0) {
+	var millis = _n0.a;
+	return millis;
+};
+var elm$random$Random$init = A2(
+	elm$core$Task$andThen,
+	function (time) {
+		return elm$core$Task$succeed(
+			elm$random$Random$initialSeed(
+				elm$time$Time$posixToMillis(time)));
+	},
+	elm$time$Time$now);
+var elm$random$Random$step = F2(
+	function (_n0, seed) {
+		var generator = _n0.a;
+		return generator(seed);
+	});
+var elm$random$Random$onEffects = F3(
+	function (router, commands, seed) {
+		if (!commands.b) {
+			return elm$core$Task$succeed(seed);
+		} else {
+			var generator = commands.a.a;
+			var rest = commands.b;
+			var _n1 = A2(elm$random$Random$step, generator, seed);
+			var value = _n1.a;
+			var newSeed = _n1.b;
+			return A2(
+				elm$core$Task$andThen,
+				function (_n2) {
+					return A3(elm$random$Random$onEffects, router, rest, newSeed);
+				},
+				A2(elm$core$Platform$sendToApp, router, value));
+		}
+	});
+var elm$random$Random$onSelfMsg = F3(
+	function (_n0, _n1, seed) {
+		return elm$core$Task$succeed(seed);
+	});
+var elm$random$Random$Generator = function (a) {
+	return {$: 'Generator', a: a};
+};
+var elm$random$Random$map = F2(
+	function (func, _n0) {
+		var genA = _n0.a;
+		return elm$random$Random$Generator(
+			function (seed0) {
+				var _n1 = genA(seed0);
+				var a = _n1.a;
+				var seed1 = _n1.b;
+				return _Utils_Tuple2(
+					func(a),
+					seed1);
+			});
+	});
+var elm$random$Random$cmdMap = F2(
+	function (func, _n0) {
+		var generator = _n0.a;
+		return elm$random$Random$Generate(
+			A2(elm$random$Random$map, func, generator));
+	});
+_Platform_effectManagers['Random'] = _Platform_createManager(elm$random$Random$init, elm$random$Random$onEffects, elm$random$Random$onSelfMsg, elm$random$Random$cmdMap);
+var elm$random$Random$command = _Platform_leaf('Random');
+var elm$random$Random$generate = F2(
+	function (tagger, generator) {
+		return elm$random$Random$command(
+			elm$random$Random$Generate(
+				A2(elm$random$Random$map, tagger, generator)));
+	});
+var elm$random$Random$addOne = function (value) {
+	return _Utils_Tuple2(1, value);
+};
+var elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var elm$core$List$sum = function (numbers) {
+	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
+};
+var elm$core$Bitwise$and = _Bitwise_and;
+var elm$core$Bitwise$xor = _Bitwise_xor;
+var elm$random$Random$peel = function (_n0) {
+	var state = _n0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var elm$random$Random$float = F2(
+	function (a, b) {
+		return elm$random$Random$Generator(
+			function (seed0) {
+				var seed1 = elm$random$Random$next(seed0);
+				var range = elm$core$Basics$abs(b - a);
+				var n1 = elm$random$Random$peel(seed1);
+				var n0 = elm$random$Random$peel(seed0);
+				var lo = (134217727 & n1) * 1.0;
+				var hi = (67108863 & n0) * 1.0;
+				var val = ((hi * 1.34217728e8) + lo) / 9.007199254740992e15;
+				var scaled = (val * range) + a;
+				return _Utils_Tuple2(
+					scaled,
+					elm$random$Random$next(seed1));
+			});
+	});
+var elm$random$Random$getByWeight = F3(
+	function (_n0, others, countdown) {
+		getByWeight:
+		while (true) {
+			var weight = _n0.a;
+			var value = _n0.b;
+			if (!others.b) {
+				return value;
+			} else {
+				var second = others.a;
+				var otherOthers = others.b;
+				if (_Utils_cmp(
+					countdown,
+					elm$core$Basics$abs(weight)) < 1) {
+					return value;
+				} else {
+					var $temp$_n0 = second,
+						$temp$others = otherOthers,
+						$temp$countdown = countdown - elm$core$Basics$abs(weight);
+					_n0 = $temp$_n0;
+					others = $temp$others;
+					countdown = $temp$countdown;
+					continue getByWeight;
+				}
+			}
+		}
+	});
+var elm$random$Random$weighted = F2(
+	function (first, others) {
+		var normalize = function (_n0) {
+			var weight = _n0.a;
+			return elm$core$Basics$abs(weight);
+		};
+		var total = normalize(first) + elm$core$List$sum(
+			A2(elm$core$List$map, normalize, others));
+		return A2(
+			elm$random$Random$map,
+			A2(elm$random$Random$getByWeight, first, others),
+			A2(elm$random$Random$float, 0, total));
+	});
+var elm$random$Random$uniform = F2(
+	function (value, valueList) {
+		return A2(
+			elm$random$Random$weighted,
+			elm$random$Random$addOne(value),
+			A2(elm$core$List$map, elm$random$Random$addOne, valueList));
+	});
+var author$project$PhotoGallery$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'GotActivity':
+				var activity = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{activity: activity}),
+					elm$core$Platform$Cmd$none);
+			case 'GotRandomPhoto':
+				var photo = msg.a;
+				return author$project$PhotoGallery$applyFilters(
+					_Utils_update(
+						model,
+						{
+							status: A2(author$project$PhotoGallery$selectUrl, photo.url, model.status)
+						}));
+			case 'ClickedPhoto':
+				var url = msg.a;
+				return author$project$PhotoGallery$applyFilters(
+					_Utils_update(
+						model,
+						{
+							status: A2(author$project$PhotoGallery$selectUrl, url, model.status)
+						}));
+			case 'ClickedSize':
+				var size = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{chosenSize: size}),
+					elm$core$Platform$Cmd$none);
+			case 'ClickedSurpriseMe':
+				var _n1 = model.status;
+				switch (_n1.$) {
+					case 'Loaded':
+						if (_n1.a.b) {
+							var _n2 = _n1.a;
+							var firstPhoto = _n2.a;
+							var otherPhotos = _n2.b;
+							return A2(
+								elm$core$Tuple$pair,
+								model,
+								A2(
+									elm$random$Random$generate,
+									author$project$PhotoGallery$GotRandomPhoto,
+									A2(elm$random$Random$uniform, firstPhoto, otherPhotos)));
+						} else {
+							return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						}
+					case 'Loading':
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					default:
+						var errorMessage = _n1.a;
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
+			case 'GotPhotos':
+				if (msg.a.$ === 'Ok') {
+					var photos = msg.a.a;
+					return author$project$PhotoGallery$applyFilters(
+						_Utils_update(
+							model,
+							{
+								status: function () {
+									var _n3 = elm$core$List$head(photos);
+									if (_n3.$ === 'Just') {
+										var photo = _n3.a;
+										return A2(author$project$PhotoGallery$Loaded, photos, photo.url);
+									} else {
+										return A2(author$project$PhotoGallery$Loaded, _List_Nil, '');
+									}
+								}()
+							}));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
+			case 'SlidHue':
+				var hue = msg.a;
+				return author$project$PhotoGallery$applyFilters(
+					_Utils_update(
+						model,
+						{hue: hue}));
+			case 'SlidRipple':
+				var ripple = msg.a;
+				return author$project$PhotoGallery$applyFilters(
+					_Utils_update(
+						model,
+						{ripple: ripple}));
+			default:
+				var noise = msg.a;
+				return author$project$PhotoGallery$applyFilters(
+					_Utils_update(
+						model,
+						{noise: noise}));
+		}
+	});
+var elm$browser$Browser$External = function (a) {
+	return {$: 'External', a: a};
+};
+var elm$browser$Browser$Internal = function (a) {
+	return {$: 'Internal', a: a};
+};
+var elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
+var elm$core$Basics$never = function (_n0) {
+	never:
+	while (true) {
+		var nvr = _n0.a;
+		var $temp$_n0 = nvr;
+		_n0 = $temp$_n0;
+		continue never;
+	}
+};
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
+var elm$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			elm$core$Task$andThen,
+			function (a) {
+				return elm$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var elm$core$Task$spawnCmd = F2(
+	function (router, _n0) {
+		var task = _n0.a;
+		return _Scheduler_spawn(
+			A2(
+				elm$core$Task$andThen,
+				elm$core$Platform$sendToApp(router),
+				task));
+	});
+var elm$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			elm$core$Task$map,
+			function (_n0) {
+				return _Utils_Tuple0;
+			},
+			elm$core$Task$sequence(
+				A2(
+					elm$core$List$map,
+					elm$core$Task$spawnCmd(router),
+					commands)));
+	});
+var elm$core$Task$onSelfMsg = F3(
+	function (_n0, _n1, _n2) {
+		return elm$core$Task$succeed(_Utils_Tuple0);
+	});
+var elm$core$Task$cmdMap = F2(
+	function (tagger, _n0) {
+		var task = _n0.a;
+		return elm$core$Task$Perform(
+			A2(elm$core$Task$map, tagger, task));
+	});
+_Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
+var elm$core$Task$command = _Platform_leaf('Task');
+var elm$core$Task$perform = F2(
+	function (toMessage, task) {
+		return elm$core$Task$command(
+			elm$core$Task$Perform(
+				A2(elm$core$Task$map, toMessage, task)));
+	});
+var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
+	switch (handler.$) {
+		case 'Normal':
+			return 0;
+		case 'MayStopPropagation':
+			return 1;
+		case 'MayPreventDefault':
+			return 2;
+		default:
+			return 3;
+	}
+};
+var elm$core$String$length = _String_length;
+var elm$core$String$slice = _String_slice;
+var elm$core$String$dropLeft = F2(
+	function (n, string) {
+		return (n < 1) ? string : A3(
+			elm$core$String$slice,
+			n,
+			elm$core$String$length(string),
+			string);
+	});
+var elm$core$String$startsWith = _String_startsWith;
+var elm$url$Url$Http = {$: 'Http'};
+var elm$url$Url$Https = {$: 'Https'};
+var elm$core$String$indexes = _String_indexes;
+var elm$core$String$isEmpty = function (string) {
+	return string === '';
+};
+var elm$core$String$left = F2(
+	function (n, string) {
+		return (n < 1) ? '' : A3(elm$core$String$slice, 0, n, string);
+	});
+var elm$core$String$contains = _String_contains;
+var elm$core$String$toInt = _String_toInt;
+var elm$url$Url$Url = F6(
+	function (protocol, host, port_, path, query, fragment) {
+		return {fragment: fragment, host: host, path: path, port_: port_, protocol: protocol, query: query};
+	});
+var elm$url$Url$chompBeforePath = F5(
+	function (protocol, path, params, frag, str) {
+		if (elm$core$String$isEmpty(str) || A2(elm$core$String$contains, '@', str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, ':', str);
+			if (!_n0.b) {
+				return elm$core$Maybe$Just(
+					A6(elm$url$Url$Url, protocol, str, elm$core$Maybe$Nothing, path, params, frag));
+			} else {
+				if (!_n0.b.b) {
+					var i = _n0.a;
+					var _n1 = elm$core$String$toInt(
+						A2(elm$core$String$dropLeft, i + 1, str));
+					if (_n1.$ === 'Nothing') {
+						return elm$core$Maybe$Nothing;
+					} else {
+						var port_ = _n1;
+						return elm$core$Maybe$Just(
+							A6(
+								elm$url$Url$Url,
+								protocol,
+								A2(elm$core$String$left, i, str),
+								port_,
+								path,
+								params,
+								frag));
+					}
+				} else {
+					return elm$core$Maybe$Nothing;
+				}
+			}
+		}
+	});
+var elm$url$Url$chompBeforeQuery = F4(
+	function (protocol, params, frag, str) {
+		if (elm$core$String$isEmpty(str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, '/', str);
+			if (!_n0.b) {
+				return A5(elm$url$Url$chompBeforePath, protocol, '/', params, frag, str);
+			} else {
+				var i = _n0.a;
+				return A5(
+					elm$url$Url$chompBeforePath,
+					protocol,
+					A2(elm$core$String$dropLeft, i, str),
+					params,
+					frag,
+					A2(elm$core$String$left, i, str));
+			}
+		}
+	});
+var elm$url$Url$chompBeforeFragment = F3(
+	function (protocol, frag, str) {
+		if (elm$core$String$isEmpty(str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, '?', str);
+			if (!_n0.b) {
+				return A4(elm$url$Url$chompBeforeQuery, protocol, elm$core$Maybe$Nothing, frag, str);
+			} else {
+				var i = _n0.a;
+				return A4(
+					elm$url$Url$chompBeforeQuery,
+					protocol,
+					elm$core$Maybe$Just(
+						A2(elm$core$String$dropLeft, i + 1, str)),
+					frag,
+					A2(elm$core$String$left, i, str));
+			}
+		}
+	});
+var elm$url$Url$chompAfterProtocol = F2(
+	function (protocol, str) {
+		if (elm$core$String$isEmpty(str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, '#', str);
+			if (!_n0.b) {
+				return A3(elm$url$Url$chompBeforeFragment, protocol, elm$core$Maybe$Nothing, str);
+			} else {
+				var i = _n0.a;
+				return A3(
+					elm$url$Url$chompBeforeFragment,
+					protocol,
+					elm$core$Maybe$Just(
+						A2(elm$core$String$dropLeft, i + 1, str)),
+					A2(elm$core$String$left, i, str));
+			}
+		}
+	});
+var elm$url$Url$fromString = function (str) {
+	return A2(elm$core$String$startsWith, 'http://', str) ? A2(
+		elm$url$Url$chompAfterProtocol,
+		elm$url$Url$Http,
+		A2(elm$core$String$dropLeft, 7, str)) : (A2(elm$core$String$startsWith, 'https://', str) ? A2(
+		elm$url$Url$chompAfterProtocol,
+		elm$url$Url$Https,
+		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
+};
+var elm$browser$Browser$Navigation$load = _Browser_load;
+var elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
+var elm$url$Url$addPort = F2(
+	function (maybePort, starter) {
+		if (maybePort.$ === 'Nothing') {
+			return starter;
+		} else {
+			var port_ = maybePort.a;
+			return starter + (':' + elm$core$String$fromInt(port_));
+		}
+	});
+var elm$url$Url$addPrefixed = F3(
+	function (prefix, maybeSegment, starter) {
+		if (maybeSegment.$ === 'Nothing') {
+			return starter;
+		} else {
+			var segment = maybeSegment.a;
+			return _Utils_ap(
+				starter,
+				_Utils_ap(prefix, segment));
+		}
+	});
+var elm$url$Url$toString = function (url) {
+	var http = function () {
+		var _n0 = url.protocol;
+		if (_n0.$ === 'Http') {
+			return 'http://';
+		} else {
+			return 'https://';
+		}
+	}();
+	return A3(
+		elm$url$Url$addPrefixed,
+		'#',
+		url.fragment,
+		A3(
+			elm$url$Url$addPrefixed,
+			'?',
+			url.query,
+			_Utils_ap(
+				A2(
+					elm$url$Url$addPort,
+					url.port_,
+					_Utils_ap(http, url.host)),
+				url.path)));
+};
+var author$project$Main$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'ClickedLink':
+				var urlRequest = msg.a;
+				if (urlRequest.$ === 'External') {
+					var href = urlRequest.a;
+					return _Utils_Tuple2(
+						model,
+						elm$browser$Browser$Navigation$load(href));
+				} else {
+					var url = urlRequest.a;
+					return _Utils_Tuple2(
+						model,
+						A2(
+							elm$browser$Browser$Navigation$pushUrl,
+							model.key,
+							elm$url$Url$toString(url)));
+				}
+			case 'ChangedUrl':
+				var url = msg.a;
+				return A2(author$project$Main$updateUrl, url, model);
+			case 'GotFoldersMsg':
+				var foldersMsg = msg.a;
+				var _n2 = model.page;
+				if (_n2.$ === 'FoldersPage') {
+					var folders = _n2.a;
+					return A2(
+						author$project$Main$toFolders,
+						model,
+						A2(author$project$PhotoFolders$update, foldersMsg, folders));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
+			default:
+				var galleryMsg = msg.a;
+				var _n3 = model.page;
+				if (_n3.$ === 'GalleryPage') {
+					var gallery = _n3.a;
+					return A2(
+						author$project$Main$toGallery,
+						model,
+						A2(author$project$PhotoGallery$update, galleryMsg, gallery));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
+		}
+	});
+var elm$html$Html$footer = _VirtualDom_node('footer');
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var author$project$Main$viewFooter = A2(
+	elm$html$Html$footer,
+	_List_Nil,
+	_List_fromArray(
+		[
+			elm$html$Html$text('One is never alone with a rubber duck. -Douglas Adams')
+		]));
+var author$project$Main$isActive = function (_n0) {
+	var link = _n0.link;
+	var page = _n0.page;
+	var _n1 = _Utils_Tuple2(link, page);
+	switch (_n1.a.$) {
+		case 'Gallery':
+			if (_n1.b.$ === 'GalleryPage') {
+				var _n2 = _n1.a;
+				return true;
+			} else {
+				var _n3 = _n1.a;
+				return false;
+			}
+		case 'Folders':
+			if (_n1.b.$ === 'FoldersPage') {
+				var _n4 = _n1.a;
+				return true;
+			} else {
+				var _n5 = _n1.a;
+				return false;
+			}
+		default:
+			return false;
+	}
+};
+var elm$html$Html$a = _VirtualDom_node('a');
+var elm$html$Html$h1 = _VirtualDom_node('h1');
+var elm$html$Html$li = _VirtualDom_node('li');
+var elm$html$Html$nav = _VirtualDom_node('nav');
+var elm$html$Html$ul = _VirtualDom_node('ul');
+var elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var elm$core$Tuple$second = function (_n0) {
+	var y = _n0.b;
+	return y;
+};
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$html$Html$Attributes$classList = function (classes) {
+	return elm$html$Html$Attributes$class(
+		A2(
+			elm$core$String$join,
+			' ',
+			A2(
+				elm$core$List$map,
+				elm$core$Tuple$first,
+				A2(elm$core$List$filter, elm$core$Tuple$second, classes))));
+};
+var elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var author$project$Main$viewHeader = function (page) {
+	var navLink = F2(
+		function (targetPage, _n0) {
+			var url = _n0.url;
+			var caption = _n0.caption;
+			return A2(
+				elm$html$Html$li,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$classList(
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								'active',
+								author$project$Main$isActive(
+									{link: targetPage, page: page}))
+							]))
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$a,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$href(url)
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(caption)
+							]))
+					]));
+		});
+	var logo = A2(
+		elm$html$Html$h1,
+		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$text('Photo Groove')
+			]));
+	var links = A2(
+		elm$html$Html$ul,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				navLink,
+				author$project$Main$Folders,
+				{caption: 'Folders', url: '/'}),
+				A2(
+				navLink,
+				author$project$Main$Gallery,
+				{caption: 'Gallery', url: '/gallery'})
+			]));
+	return A2(
+		elm$html$Html$nav,
+		_List_Nil,
+		_List_fromArray(
+			[logo, links]));
+};
 var author$project$PhotoFolders$End = {$: 'End'};
 var author$project$PhotoFolders$ToggleExpanded = function (a) {
 	return {$: 'ToggleExpanded', a: a};
@@ -6121,30 +7542,7 @@ var author$project$PhotoFolders$appendIndex = F2(
 var author$project$PhotoFolders$SelectPhotoUrl = function (a) {
 	return {$: 'SelectPhotoUrl', a: a};
 };
-var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
-	switch (handler.$) {
-		case 'Normal':
-			return 0;
-		case 'MayStopPropagation':
-			return 1;
-		case 'MayPreventDefault':
-			return 2;
-		default:
-			return 3;
-	}
-};
 var elm$html$Html$div = _VirtualDom_node('div');
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$json$Json$Encode$string = _Json_wrap;
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
-var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -6176,14 +7574,6 @@ var author$project$PhotoFolders$viewPhoto = function (url) {
 				elm$html$Html$text(url)
 			]));
 };
-var elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
-		}
-	});
 var elm$html$Html$label = _VirtualDom_node('label');
 var author$project$PhotoFolders$viewFolder = F2(
 	function (path, _n0) {
@@ -6318,7 +7708,6 @@ var elm$core$Maybe$andThen = F2(
 			return elm$core$Maybe$Nothing;
 		}
 	});
-var elm$html$Html$h1 = _VirtualDom_node('h1');
 var author$project$PhotoFolders$view = function (model) {
 	var photoByUrl = function (url) {
 		return A2(elm$core$Dict$get, url, model.photos);
@@ -6348,13 +7737,6 @@ var author$project$PhotoFolders$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						A2(
-						elm$html$Html$h1,
-						_List_Nil,
-						_List_fromArray(
-							[
-								elm$html$Html$text('Folders')
-							])),
 						A2(author$project$PhotoFolders$viewFolder, author$project$PhotoFolders$End, model.root)
 					])),
 				A2(
@@ -6367,218 +7749,283 @@ var author$project$PhotoFolders$view = function (model) {
 					[selectedPhoto]))
 			]));
 };
-var elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
+var author$project$PhotoGallery$ClickedSurpriseMe = {$: 'ClickedSurpriseMe'};
+var author$project$PhotoGallery$Large = {$: 'Large'};
+var author$project$PhotoGallery$SlidHue = function (a) {
+	return {$: 'SlidHue', a: a};
 };
-var elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
+var author$project$PhotoGallery$SlidNoise = function (a) {
+	return {$: 'SlidNoise', a: a};
 };
-var elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
+var author$project$PhotoGallery$SlidRipple = function (a) {
+	return {$: 'SlidRipple', a: a};
 };
-var elm$core$Basics$never = function (_n0) {
-	never:
-	while (true) {
-		var nvr = _n0.a;
-		var $temp$_n0 = nvr;
-		_n0 = $temp$_n0;
-		continue never;
+var author$project$PhotoGallery$Small = {$: 'Small'};
+var author$project$PhotoGallery$sizeToString = function (size) {
+	switch (size.$) {
+		case 'Small':
+			return 'small';
+		case 'Medium':
+			return 'med';
+		default:
+			return 'large';
 	}
 };
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
-var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
-var elm$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			elm$core$Task$andThen,
-			function (a) {
-				return elm$core$Task$succeed(
-					func(a));
-			},
-			taskA);
+var elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
 	});
-var elm$core$Task$spawnCmd = F2(
-	function (router, _n0) {
-		var task = _n0.a;
-		return _Scheduler_spawn(
+var author$project$PhotoGallery$onSlide = function (toMsg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'slide',
+		A2(
+			elm$json$Json$Decode$map,
+			toMsg,
 			A2(
-				elm$core$Task$andThen,
-				elm$core$Platform$sendToApp(router),
-				task));
+				elm$json$Json$Decode$at,
+				_List_fromArray(
+					['detail', 'userSlidTo']),
+				elm$json$Json$Decode$int)));
+};
+var elm$virtual_dom$VirtualDom$node = function (tag) {
+	return _VirtualDom_node(
+		_VirtualDom_noScript(tag));
+};
+var elm$html$Html$node = elm$virtual_dom$VirtualDom$node;
+var author$project$PhotoGallery$rangeSlider = F2(
+	function (attributes, children) {
+		return A3(elm$html$Html$node, 'range-slider', attributes, children);
 	});
-var elm$core$Task$onEffects = F3(
-	function (router, commands, state) {
+var elm$html$Html$Attributes$max = elm$html$Html$Attributes$stringProperty('max');
+var author$project$PhotoGallery$viewFilter = F3(
+	function (toMsg, name, magnitude) {
 		return A2(
-			elm$core$Task$map,
-			function (_n0) {
-				return _Utils_Tuple0;
-			},
-			elm$core$Task$sequence(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('filter-slider')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$label,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(name)
+						])),
+					A2(
+					author$project$PhotoGallery$rangeSlider,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$max('11'),
+							author$project$PhotoGallery$onSlide(toMsg)
+						]),
+					_List_Nil),
+					A2(
+					elm$html$Html$label,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(
+							elm$core$String$fromInt(magnitude))
+						]))
+				]));
+	});
+var author$project$PhotoGallery$ClickedSize = function (a) {
+	return {$: 'ClickedSize', a: a};
+};
+var elm$html$Html$input = _VirtualDom_node('input');
+var elm$html$Html$Attributes$name = elm$html$Html$Attributes$stringProperty('name');
+var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
+var author$project$PhotoGallery$viewSizeChooser = function (size) {
+	return A2(
+		elm$html$Html$label,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$input,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$type_('radio'),
+						elm$html$Html$Attributes$name('size'),
+						elm$html$Html$Events$onClick(
+						author$project$PhotoGallery$ClickedSize(size))
+					]),
+				_List_Nil),
+				elm$html$Html$text(
+				author$project$PhotoGallery$sizeToString(size))
+			]));
+};
+var author$project$PhotoGallery$ClickedPhoto = function (a) {
+	return {$: 'ClickedPhoto', a: a};
+};
+var elm$html$Html$Attributes$title = elm$html$Html$Attributes$stringProperty('title');
+var author$project$PhotoGallery$viewThumbnail = F2(
+	function (selectedUrl, thumb) {
+		return A2(
+			elm$html$Html$img,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$src(
+					_Utils_ap(author$project$PhotoGallery$urlPrefix, thumb.url)),
+					elm$html$Html$Attributes$title(
+					thumb.title + (' [' + (elm$core$String$fromInt(thumb.size) + ' KB]'))),
+					elm$html$Html$Attributes$classList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'selected',
+							_Utils_eq(selectedUrl, thumb.url))
+						])),
+					elm$html$Html$Events$onClick(
+					author$project$PhotoGallery$ClickedPhoto(thumb.url))
+				]),
+			_List_Nil);
+	});
+var elm$html$Html$button = _VirtualDom_node('button');
+var elm$html$Html$canvas = _VirtualDom_node('canvas');
+var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
+var author$project$PhotoGallery$viewLoaded = F3(
+	function (photos, selectedUrl, model) {
+		return _List_fromArray(
+			[
+				A2(
+				elm$html$Html$button,
+				_List_fromArray(
+					[
+						elm$html$Html$Events$onClick(author$project$PhotoGallery$ClickedSurpriseMe)
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text('Surprise Me!')
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('activity')
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text(model.activity)
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('filters')
+					]),
+				_List_fromArray(
+					[
+						A3(author$project$PhotoGallery$viewFilter, author$project$PhotoGallery$SlidHue, 'Hue', model.hue),
+						A3(author$project$PhotoGallery$viewFilter, author$project$PhotoGallery$SlidRipple, 'Ripple', model.ripple),
+						A3(author$project$PhotoGallery$viewFilter, author$project$PhotoGallery$SlidNoise, 'Noise', model.noise)
+					])),
+				A2(
+				elm$html$Html$h3,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Thumbnail Size:')
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$id('choose-size')
+					]),
 				A2(
 					elm$core$List$map,
-					elm$core$Task$spawnCmd(router),
-					commands)));
+					author$project$PhotoGallery$viewSizeChooser,
+					_List_fromArray(
+						[author$project$PhotoGallery$Small, author$project$PhotoGallery$Medium, author$project$PhotoGallery$Large]))),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$id('thumbnails'),
+						elm$html$Html$Attributes$class(
+						author$project$PhotoGallery$sizeToString(model.chosenSize))
+					]),
+				A2(
+					elm$core$List$map,
+					author$project$PhotoGallery$viewThumbnail(selectedUrl),
+					photos)),
+				A2(
+				elm$html$Html$canvas,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$id('main-canvas'),
+						elm$html$Html$Attributes$class('large'),
+						elm$html$Html$Attributes$src(author$project$PhotoGallery$urlPrefix + ('large/' + selectedUrl))
+					]),
+				_List_Nil)
+			]);
 	});
-var elm$core$Task$onSelfMsg = F3(
-	function (_n0, _n1, _n2) {
-		return elm$core$Task$succeed(_Utils_Tuple0);
-	});
-var elm$core$Task$cmdMap = F2(
-	function (tagger, _n0) {
-		var task = _n0.a;
-		return elm$core$Task$Perform(
-			A2(elm$core$Task$map, tagger, task));
-	});
-_Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
-var elm$core$Task$command = _Platform_leaf('Task');
-var elm$core$Task$perform = F2(
-	function (toMessage, task) {
-		return elm$core$Task$command(
-			elm$core$Task$Perform(
-				A2(elm$core$Task$map, toMessage, task)));
-	});
-var elm$core$String$length = _String_length;
-var elm$core$String$slice = _String_slice;
-var elm$core$String$dropLeft = F2(
-	function (n, string) {
-		return (n < 1) ? string : A3(
-			elm$core$String$slice,
-			n,
-			elm$core$String$length(string),
-			string);
-	});
-var elm$core$String$startsWith = _String_startsWith;
-var elm$url$Url$Http = {$: 'Http'};
-var elm$url$Url$Https = {$: 'Https'};
-var elm$core$String$indexes = _String_indexes;
-var elm$core$String$isEmpty = function (string) {
-	return string === '';
+var author$project$PhotoGallery$view = function (model) {
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('content')
+			]),
+		function () {
+			var _n0 = model.status;
+			switch (_n0.$) {
+				case 'Loaded':
+					var photos = _n0.a;
+					var selectedUrl = _n0.b;
+					return A3(author$project$PhotoGallery$viewLoaded, photos, selectedUrl, model);
+				case 'Loading':
+					return _List_Nil;
+				default:
+					var errorMessage = _n0.a;
+					return _List_fromArray(
+						[
+							elm$html$Html$text('Error: ' + errorMessage)
+						]);
+			}
+		}());
 };
-var elm$core$String$left = F2(
-	function (n, string) {
-		return (n < 1) ? '' : A3(elm$core$String$slice, 0, n, string);
-	});
-var elm$core$String$contains = _String_contains;
-var elm$core$String$toInt = _String_toInt;
-var elm$url$Url$Url = F6(
-	function (protocol, host, port_, path, query, fragment) {
-		return {fragment: fragment, host: host, path: path, port_: port_, protocol: protocol, query: query};
-	});
-var elm$url$Url$chompBeforePath = F5(
-	function (protocol, path, params, frag, str) {
-		if (elm$core$String$isEmpty(str) || A2(elm$core$String$contains, '@', str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, ':', str);
-			if (!_n0.b) {
-				return elm$core$Maybe$Just(
-					A6(elm$url$Url$Url, protocol, str, elm$core$Maybe$Nothing, path, params, frag));
-			} else {
-				if (!_n0.b.b) {
-					var i = _n0.a;
-					var _n1 = elm$core$String$toInt(
-						A2(elm$core$String$dropLeft, i + 1, str));
-					if (_n1.$ === 'Nothing') {
-						return elm$core$Maybe$Nothing;
-					} else {
-						var port_ = _n1;
-						return elm$core$Maybe$Just(
-							A6(
-								elm$url$Url$Url,
-								protocol,
-								A2(elm$core$String$left, i, str),
-								port_,
-								path,
-								params,
-								frag));
-					}
-				} else {
-					return elm$core$Maybe$Nothing;
-				}
-			}
+var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
+var elm$html$Html$map = elm$virtual_dom$VirtualDom$map;
+var elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
+var elm$html$Html$Lazy$lazy = elm$virtual_dom$VirtualDom$lazy;
+var author$project$Main$view = function (model) {
+	var content = function () {
+		var _n0 = model.page;
+		switch (_n0.$) {
+			case 'FoldersPage':
+				var folders = _n0.a;
+				return A2(
+					elm$html$Html$map,
+					author$project$Main$GotFoldersMsg,
+					author$project$PhotoFolders$view(folders));
+			case 'GalleryPage':
+				var gallery = _n0.a;
+				return A2(
+					elm$html$Html$map,
+					author$project$Main$GotGalleryMsg,
+					author$project$PhotoGallery$view(gallery));
+			default:
+				return elm$html$Html$text('Not Found');
 		}
-	});
-var elm$url$Url$chompBeforeQuery = F4(
-	function (protocol, params, frag, str) {
-		if (elm$core$String$isEmpty(str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, '/', str);
-			if (!_n0.b) {
-				return A5(elm$url$Url$chompBeforePath, protocol, '/', params, frag, str);
-			} else {
-				var i = _n0.a;
-				return A5(
-					elm$url$Url$chompBeforePath,
-					protocol,
-					A2(elm$core$String$dropLeft, i, str),
-					params,
-					frag,
-					A2(elm$core$String$left, i, str));
-			}
-		}
-	});
-var elm$url$Url$chompBeforeFragment = F3(
-	function (protocol, frag, str) {
-		if (elm$core$String$isEmpty(str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, '?', str);
-			if (!_n0.b) {
-				return A4(elm$url$Url$chompBeforeQuery, protocol, elm$core$Maybe$Nothing, frag, str);
-			} else {
-				var i = _n0.a;
-				return A4(
-					elm$url$Url$chompBeforeQuery,
-					protocol,
-					elm$core$Maybe$Just(
-						A2(elm$core$String$dropLeft, i + 1, str)),
-					frag,
-					A2(elm$core$String$left, i, str));
-			}
-		}
-	});
-var elm$url$Url$chompAfterProtocol = F2(
-	function (protocol, str) {
-		if (elm$core$String$isEmpty(str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, '#', str);
-			if (!_n0.b) {
-				return A3(elm$url$Url$chompBeforeFragment, protocol, elm$core$Maybe$Nothing, str);
-			} else {
-				var i = _n0.a;
-				return A3(
-					elm$url$Url$chompBeforeFragment,
-					protocol,
-					elm$core$Maybe$Just(
-						A2(elm$core$String$dropLeft, i + 1, str)),
-					A2(elm$core$String$left, i, str));
-			}
-		}
-	});
-var elm$url$Url$fromString = function (str) {
-	return A2(elm$core$String$startsWith, 'http://', str) ? A2(
-		elm$url$Url$chompAfterProtocol,
-		elm$url$Url$Http,
-		A2(elm$core$String$dropLeft, 7, str)) : (A2(elm$core$String$startsWith, 'https://', str) ? A2(
-		elm$url$Url$chompAfterProtocol,
-		elm$url$Url$Https,
-		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
+	}();
+	return {
+		body: _List_fromArray(
+			[
+				A2(elm$html$Html$Lazy$lazy, author$project$Main$viewHeader, model.page),
+				content,
+				author$project$Main$viewFooter
+			]),
+		title: 'Photo Groove, SPA Style'
+	};
 };
-var elm$browser$Browser$element = _Browser_element;
-var elm$core$Platform$Sub$batch = _Platform_batch;
-var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
-var author$project$PhotoFolders$main = elm$browser$Browser$element(
-	{
-		init: author$project$PhotoFolders$init,
-		subscriptions: function (_n0) {
-			return elm$core$Platform$Sub$none;
-		},
-		update: author$project$PhotoFolders$update,
-		view: author$project$PhotoFolders$view
-	});
-_Platform_export({'PhotoFolders':{'init':author$project$PhotoFolders$main(
-	elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
+var elm$browser$Browser$application = _Browser_application;
+var elm$json$Json$Decode$float = _Json_decodeFloat;
+var author$project$Main$main = elm$browser$Browser$application(
+	{init: author$project$Main$init, onUrlChange: author$project$Main$ChangedUrl, onUrlRequest: author$project$Main$ClickedLink, subscriptions: author$project$Main$subscriptions, update: author$project$Main$update, view: author$project$Main$view});
+_Platform_export({'Main':{'init':author$project$Main$main(elm$json$Json$Decode$float)(0)}});}(this));
